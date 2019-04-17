@@ -39,6 +39,13 @@ module.exports = {
             //   target: "zip",
             //   arch: ["x64"] //"ia32"
             // }
+          ],
+          publish: [
+            {
+              provider: "github",
+              owner: "copytranslator",
+              repo: "copytranslator"
+            }
           ]
         },
         linux: {
