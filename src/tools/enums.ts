@@ -21,7 +21,8 @@ enum MessageType {
   TranslateResult,
   OpenMenu,
   Router,
-  UpdateT
+  UpdateT,
+  CaptureScreen
 }
 
 enum WinOpt {
@@ -59,6 +60,15 @@ const ColorStatus = mkenum({
   Fail: rgb(255, 0, 0)
 });
 type ColorStatus = (typeof ColorStatus)[keyof typeof ColorStatus];
+
+export default {
+  keys: function(type: object): Array<string> {
+    return Object.keys(type).filter(k => (typeof k as any) != "number");
+  },
+  values: function(type: object): Array<number> {
+    return Object.values(type).filter(k => (typeof k as any) == "number");
+  }
+};
 
 export {
   FrameMode,

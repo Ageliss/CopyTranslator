@@ -34,6 +34,8 @@ import DictResult from "../components/DictResult";
 import { shell } from "electron";
 import { RuleName } from "@/tools/rule";
 import { constants } from "crypto";
+import { capture } from "@/tools/capture";
+
 export default {
   name: "FocusMode",
   mixins: [BaseView, WindowController, Adjustable],

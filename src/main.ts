@@ -1,12 +1,13 @@
 import Vue from "vue";
 import router from "./router";
 import store from "./store";
-import { desktopCapturer, screen, ipcRenderer } from "electron";
+import { ipcRenderer } from "electron";
 import { MessageType } from "./tools/enums";
 import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
 import App from "./App.vue";
 import { constants, version } from "./core/constant";
+import { capture, CaptureType } from "./tools/capture";
 
 const remote = require("electron").remote;
 const controller = remote.getGlobal("controller");
@@ -40,7 +41,12 @@ new Vue({
     ipcRenderer.on(MessageType.UpdateT.toString(), (event: any, arg: any) => {
       Vue.prototype.$t = controller.getT();
     });
-
+    ipcRenderer.on(
+      MessageType.CaptureScreen.toString(),
+      (event: any, arg: CaptureType) => {
+        capture(arg);
+      }
+    );
     if (controller.res) controller.sync();
     else {
       controller.checkClipboard();

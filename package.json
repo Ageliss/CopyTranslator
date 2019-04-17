@@ -1,6 +1,6 @@
 {
   "name": "copytranslator",
-  "version": "0.0.8",
+  "version": "0.0.7",
   "private": true,
   "description": "Foreign language assisted reading and translation solution",
   "author": {
@@ -34,6 +34,7 @@
     "md5": "^2.2.1",
     "robotjs": "^0.5.1",
     "sbd": "^1.0.15",
+    "update-electron-app": "^1.3.0",
     "vue": "^2.5.21",
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1"

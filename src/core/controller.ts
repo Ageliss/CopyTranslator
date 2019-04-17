@@ -309,7 +309,6 @@ class Controller {
 
   restoreFromConfig() {
     for (let keyValue in this.config.values) {
-      
       this.setByKeyValue(keyValue, this.config.values[keyValue], false);
     }
   }
@@ -411,10 +410,8 @@ class Controller {
   }
 
   setByKeyValue(ruleKey: string, value: any, save = true, refresh = true) {
-    
     let ruleValue = reverseRuleName[ruleKey];
-    
-    
+
     this.setByRuleName(ruleValue, value, save, refresh);
   }
 }

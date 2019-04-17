@@ -10,6 +10,7 @@ import { ConfigParser, getEnumValue as r } from "./configParser";
 //r can be used to transform a enum to string
 import { envConfig } from "./envConfig";
 import { HideDirection } from "./enums";
+import Enum from "./enums";
 import { TranslatorType } from "./translation/translators";
 import { defaultShortcuts } from "./shortcuts";
 import { Controller } from "../core/controller";
@@ -180,18 +181,16 @@ class ActionManager {
         {
           type: MenuItemType.submenu,
           id: id,
-          submenu: Object.values(type)
-            .filter(k => (typeof k as any) == "number")
-            .map(e => {
-              return ActionWrapper(
-                {
-                  type: MenuItemType.checkbox,
-                  id: compose([id, (<number>e).toString()]),
-                  label: type[<number>e]
-                },
-                callback
-              );
-            })
+          submenu: Enum.values(type).map(e => {
+            return ActionWrapper(
+              {
+                type: MenuItemType.checkbox,
+                id: compose([id, e.toString()]),
+                label: type[e]
+              },
+              callback
+            );
+          })
         },
         callback
       );
@@ -282,8 +281,8 @@ class ActionManager {
           );
         });
     };
-    items.push(selectAction(RuleName.localeSetting, localeGenerator));
 
+    items.push(selectAction(RuleName.localeSetting, localeGenerator));
     items.push(normalAction("settings"));
     items.push(normalAction("helpAndUpdate"));
     items.push(normalAction("exit"));

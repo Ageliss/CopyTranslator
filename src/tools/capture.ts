@@ -1,50 +1,96 @@
-import { desktopCapturer, screen, ipcRenderer } from "electron";
+import { desktopCapturer, screen, ipcRenderer, nativeImage } from "electron";
+import { MessageType } from "./enums";
 //注意，这一个函数一定要在渲染进程里调用
-export function capture(x: number, y: number, width: number, height: number) {
-  // 主进程捕获到截图快捷键就让渲染进程截图
-  // 获取屏幕数量
-  // screen为electron的模块
-  const displays = screen.getAllDisplays();
-  // 每个屏幕都截图一个
-  // desktopCapturer.getSources可以一次获取所有桌面的截图
-  // 但由于thumbnailSize不一样所以就采用了每个桌面尺寸都捕获一张
-  const getDesktopCapturer = displays.map((display, i) => {
-    return new Promise((resolve, reject) => {
-      desktopCapturer.getSources(
-        {
-          types: ["screen"],
-          thumbnailSize: display.size
-        },
-        (error, sources) => {
-          if (!error) {
-            return resolve({
-              display,
-              thumbnail: sources[i].thumbnail
-            });
-          }
-          return reject(error);
+export interface CaptureType {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  image?: string;
+}
+
+function getDisplay() {
+  const point = screen.getCursorScreenPoint();
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { id, bounds, workArea, scaleFactor } = screen.getDisplayNearestPoint(
+    point
+  );
+  // win32 darwin linux平台分别处理
+  const scale =
+    process.platform === "darwin"
+      ? 1
+      : scaleFactor / primaryDisplay.scaleFactor;
+  const display = process.platform === "linux" ? workArea : bounds;
+  return {
+    id,
+    scaleFactor,
+    x: display.x * (scale >= 1 ? scale : 1),
+    y: display.y * (scale >= 1 ? scale : 1),
+    width: display.width * scale,
+    height: display.height * scale
+  };
+}
+
+function getSource(
+  display: ReturnType<typeof getDisplay>
+): Promise<CaptureType> {
+  return new Promise((resolve, reject) => {
+    desktopCapturer.getSources(
+      {
+        types: ["screen"],
+        thumbnailSize: {
+          width: display.width,
+          height: display.width
         }
-      );
-    });
+      },
+      (error, sources) => {
+        if (error) return reject(error);
+        const index = screen
+          .getAllDisplays()
+          .findIndex(({ id }) => id === display.id);
+        if (index === -1)
+          reject(new Error(`Not find display ${display.id} source`));
+        resolve({
+          x: 0,
+          y: 0,
+          width: display.width,
+          height: display.height,
+          image: sources[index].thumbnail.toDataURL()
+        });
+      }
+    );
   });
-  Promise.all(getDesktopCapturer)
-    .then((sources: any) => {
-      // 把数据传递到主进程
-      const thumbnail = sources[0].thumbnail;
-      let img = new Image();
-      let canvas = document.createElement("canvas");
-      let ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>(
-        canvas.getContext("2d")
+}
+
+export async function capture(options: CaptureType) {
+  try {
+    const source: CaptureType = await getSource(getDisplay());
+    // 把数据传递到主进程
+    const thumbnail = <string>source.image;
+    let img = new Image();
+    let canvas = document.createElement("canvas");
+    let ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>(
+      canvas.getContext("2d")
+    );
+    img.src = thumbnail;
+    img.addEventListener("load", () => {
+      canvas.width = options.width;
+      canvas.height = options.height;
+      ctx.drawImage(
+        img,
+        options.x,
+        options.y,
+        options.width,
+        options.height,
+        0,
+        0,
+        options.width,
+        options.height
       );
-      img.src = thumbnail.toDataURL();
-      img.addEventListener("load", () => {
-        canvas.width = 500;
-        canvas.height = 500;
-        ctx.drawImage(img, 0, 0, 500, 500, 0, 0, 500, 500);
-        const dataURL = canvas.toDataURL("image/png");
-        console.log(dataURL);
-      });
-      ipcRenderer.send("shortcut-capture", sources);
-    })
-    .catch(error => console.log(error));
+      options.image = canvas.toDataURL();
+      ipcRenderer.send(MessageType.CaptureScreen.toString(), options);
+    });
+  } catch (e) {
+    console.log(e);
+  }
 }

@@ -3,6 +3,8 @@ const ioHook = require("iohook");
 import { MessageType, WinOpt } from "./enums";
 import { RuleName } from "./rule";
 import { Controller } from "../core/controller";
+import { log } from "./logger";
+import { CaptureType } from "./capture";
 
 const robot = require("robotjs");
 
@@ -48,8 +50,16 @@ class WindowController {
           if (arg.x) bounds.x = arg.x;
           if (arg.y) bounds.y = arg.y;
           currentWindow.setBounds(bounds);
+          break;
       }
     });
+    ipc.on(
+      MessageType.CaptureScreen.toString(),
+      (event: any, arg: CaptureType) => {
+        console.log(arg.image);
+      }
+    );
+
     ioHook.on("keydown", (event: any) => {
       this.ctrlKey = event.ctrlKey;
     });
