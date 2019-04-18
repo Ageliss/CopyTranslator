@@ -45,7 +45,6 @@ class Controller {
     windowController.bind();
     this.tray.init();
     this.action.init();
-    checkUpdate();
     checkNotice();
   }
 

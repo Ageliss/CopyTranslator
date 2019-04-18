@@ -1,13 +1,11 @@
 "use strict";
 import { app, protocol, Notification } from "electron";
 import { installVueDevtools } from "vue-cli-plugin-electron-builder/lib";
-import { autoUpdater } from "electron-updater";
+
 import { log } from "./tools/logger";
 import { Controller } from "./core/controller";
 import { EventEmitter } from "events";
 const isDevelopment = process.env.NODE_ENV !== "production";
-autoUpdater.checkForUpdatesAndNotify();
-
 app.setAppUserModelId("com.copytranslator.copytranslator");
 
 let controller = new Controller();
