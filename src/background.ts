@@ -6,6 +6,7 @@ import { log } from "./tools/logger";
 import { Controller } from "./core/controller";
 import { EventEmitter } from "events";
 const isDevelopment = process.env.NODE_ENV !== "production";
+
 app.setAppUserModelId("com.copytranslator.copytranslator");
 
 let controller = new Controller();
